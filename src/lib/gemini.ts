@@ -8,6 +8,41 @@ import {
 } from "../types";
 
 /**
+ * Returns a high-quality relevant product image based on product keywords and category.
+ */
+export function getProductImageForCategory(name: string, url: string): string {
+  const text = (name + " " + url).toLowerCase();
+  if (text.includes("iphone") || text.includes("phone") || text.includes("mobile") || text.includes("samsung") || text.includes("pixel") || text.includes("oneplus") || text.includes("smartphone")) {
+    return "https://images.unsplash.com/photo-1592750475338-74b7b21085ab?w=600&auto=format&fit=crop&q=80";
+  }
+  if (text.includes("laptop") || text.includes("macbook") || text.includes("computer") || text.includes("dell") || text.includes("lenovo") || text.includes("hp")) {
+    return "https://images.unsplash.com/photo-1496181133206-80ce9b88a853?w=600&auto=format&fit=crop&q=80";
+  }
+  if (text.includes("headphone") || text.includes("earphone") || text.includes("earbuds") || text.includes("audio") || text.includes("sound") || text.includes("boat") || text.includes("sony")) {
+    return "https://images.unsplash.com/photo-1505740420928-5e560c06d30e?w=600&auto=format&fit=crop&q=80";
+  }
+  if (text.includes("watch") || text.includes("smartwatch") || text.includes("noise") || text.includes("fire-boltt")) {
+    return "https://images.unsplash.com/photo-1523275335684-37898b6baf30?w=600&auto=format&fit=crop&q=80";
+  }
+  if (text.includes("shoe") || text.includes("sneaker") || text.includes("boot") || text.includes("nike") || text.includes("puma") || text.includes("footwear")) {
+    return "https://images.unsplash.com/photo-1542291026-7eec264c27ff?w=600&auto=format&fit=crop&q=80";
+  }
+  if (text.includes("chair") || text.includes("table") || text.includes("desk") || text.includes("furniture")) {
+    return "https://images.unsplash.com/photo-1580481077195-c3a82da9189b?w=600&auto=format&fit=crop&q=80";
+  }
+  if (text.includes("mixer") || text.includes("blender") || text.includes("grinder") || text.includes("cooker") || text.includes("kitchen")) {
+    return "https://images.unsplash.com/photo-1570222094114-d054a817e56b?w=600&auto=format&fit=crop&q=80";
+  }
+  if (text.includes("charger") || text.includes("cable") || text.includes("adapter") || text.includes("power bank")) {
+    return "https://images.unsplash.com/photo-1583863788434-e58a36330cf0?w=600&auto=format&fit=crop&q=80";
+  }
+  if (text.includes("tea") || text.includes("coffee") || text.includes("drink") || text.includes("food") || text.includes("detox")) {
+    return "https://images.unsplash.com/photo-1544787219-7f47ccb76574?w=600&auto=format&fit=crop&q=80";
+  }
+  return "https://images.unsplash.com/photo-1526170375885-4d8ecf77b99f?w=600&auto=format&fit=crop&q=80";
+}
+
+/**
  * Extracts a human-readable title and store from any e-commerce URL.
  */
 export function extractProductInfoFromUrl(rawUrl: string): {
@@ -44,24 +79,26 @@ export function extractProductInfoFromUrl(rawUrl: string): {
       candidateTitle = `E-Commerce Product (${url.pathname.slice(0, 15)})`;
     }
 
+    const imageUrl = getProductImageForCategory(candidateTitle, rawUrl);
+
     return {
       name: candidateTitle,
       store,
-      imageUrl: "https://images.unsplash.com/photo-1523275335684-37898b6baf30?w=600&auto=format&fit=crop&q=80",
+      imageUrl,
     };
   } catch {
     return {
       name: "Analyzed E-Commerce Product",
       store: "Online Store",
-      imageUrl: "https://images.unsplash.com/photo-1523275335684-37898b6baf30?w=600&auto=format&fit=crop&q=80",
+      imageUrl: "https://images.unsplash.com/photo-1526170375885-4d8ecf77b99f?w=600&auto=format&fit=crop&q=80",
     };
   }
 }
 
 /**
  * Universal URL Analyzer:
- * For ANY new product link, uses Gemini AI (with a fallback) to extract product metadata
- * and synthesize realistic customer reviews reflecting marketplace patterns.
+ * For ANY product link, uses Gemini AI to analyze the exact product from the URL
+ * and synthesize realistic, highly-tailored customer reviews.
  */
 export async function synthesizeProductAndReviewsFromUrl(
   productUrl: string
@@ -70,10 +107,11 @@ export async function synthesizeProductAndReviewsFromUrl(
   const apiKey = process.env.GEMINI_API_KEY?.trim();
 
   // Try live Gemini synthesis if API key is provided
-  if (apiKey && apiKey !== "your_gemini_api_key" && apiKey !== "YOUR_GEMINI_API_KEY") {
+  if (apiKey && apiKey !== "your_gemini_api_key" && apiKey !== "YOUR_GEMINI_API_KEY" && apiKey.length > 10) {
     try {
+      console.log(`[ReviewLens Gemini] Live analyzing URL with Gemini 1.5 Flash: ${productUrl}`);
       const genAI = new GoogleGenerativeAI(apiKey);
-      const modelName = process.env.GEMINI_MODEL || "gemini-1.5-flash";
+      const modelName = process.env.GEMINI_MODEL || "gemini-2.5-flash";
       const model = genAI.getGenerativeModel({
         model: modelName,
         generationConfig: {
@@ -82,29 +120,29 @@ export async function synthesizeProductAndReviewsFromUrl(
         },
       });
 
-      const prompt = `A user pasted this e-commerce product link: "${productUrl}".
-Your task is to analyze this link and extract/synthesize realistic product review intelligence:
+      const prompt = `A user pasted this e-commerce product link into ReviewLens: "${productUrl}".
 
-1. Identify the product name from the link (e.g. "Apple iPhone 15 128GB", "Sony WH-1000XM5 Wireless Headphones", or similar from URL structure).
+Your task is to analyze this exact product link and generate comprehensive review intelligence:
+1. Identify the EXACT product title, brand, and model from the URL slug/path (e.g. "Apple iPhone 15 128GB Black", "Sony WH-1000XM5 Noise Canceling Headphones", "Nike Air Pegasus 40 Running Shoes").
 2. Store name: "${info.store}".
-3. Provide an averageRating between 3.8 and 4.7.
-4. Generate 30 realistic, diverse customer reviews reflecting authentic Indian e-commerce buyer experiences:
-   - Varied reviewer names (Riya, Aarav, Sneha, Vikram, Priya, Rajesh, Deepa, Mohammed, etc.)
-   - Star ratings (mix of 5, 4, 3, with some 2 and 1 stars for realism)
-   - Realistic review dates distributed over the past 6 months (ISO strings)
-   - 75% verified purchases, 25% unverified
-   - Detailed comments mentioning build quality, value for money, battery/performance, and delivery.
+3. Provide the typical real-world marketplace rating for this specific product (e.g. 4.3).
+4. Generate 30 REALISTIC customer reviews tailored specifically to THIS exact product:
+   - Varied reviewer names from Indian e-commerce (Aarav, Sneha, Priya, Vikram, Rajesh, Deepa, Mohammed, Kavita, etc.)
+   - Ratings (realistic spread: some 5★, 4★, 3★, 2★, 1★)
+   - Dates spread across the past 6 months (ISO 8601 strings)
+   - Verified purchases (mix of verified and unverified)
+   - Authentic comments mentioning genuine pros, specific features of this product, and authentic complaints (e.g. for a phone: screen quality, battery drain, camera in low light, heating; for shoes: sizing, sole grip; for headphones: ANC, ear cushion comfort).
 
-Return pure JSON matching this exact structure:
+Return ONLY raw JSON matching this structure:
 {
-  "productName": "Clean Product Title",
+  "productName": "Exact Brand and Model Name",
   "store": "${info.store}",
   "averageRating": 4.2,
   "reviews": [
     {
       "reviewerName": "Aarav Sharma",
       "rating": 5,
-      "comment": "Specific feedback about the product...",
+      "comment": "Specific review text mentioning this exact product features...",
       "isVerifiedPurchase": true,
       "reviewDate": "2024-08-14T10:30:00Z"
     }
@@ -116,7 +154,10 @@ Return pure JSON matching this exact structure:
       const cleanJson = text.replace(/```json/g, "").replace(/```/g, "").trim();
       const parsed = JSON.parse(cleanJson);
 
+      const resolvedTitle = parsed.productName || info.name;
+      const imageUrl = getProductImageForCategory(resolvedTitle, productUrl);
       const productId = `dyn_${Date.now()}`;
+
       const reviews: ReviewItem[] = (parsed.reviews || []).map((r: any, idx: number) => ({
         id: `rev_dyn_${productId}_${idx + 1}`,
         reviewerName: r.reviewerName || `Customer ${idx + 1}`,
@@ -127,12 +168,13 @@ Return pure JSON matching this exact structure:
       }));
 
       if (reviews.length >= 10) {
+        console.log(`[ReviewLens Gemini] Successfully analyzed ${resolvedTitle} with ${reviews.length} Gemini-generated reviews!`);
         return {
           product: {
             id: productId,
             url: productUrl,
-            name: parsed.productName || info.name,
-            imageUrl: info.imageUrl,
+            name: resolvedTitle,
+            imageUrl,
             store: parsed.store || info.store,
             averageRating: Number(parsed.averageRating) || 4.2,
             reviewCount: reviews.length,
@@ -141,12 +183,17 @@ Return pure JSON matching this exact structure:
         };
       }
     } catch (err) {
-      console.warn("Live Gemini product synthesis failed, falling back to dynamic template generator:", err);
+      console.warn("[ReviewLens Gemini] Live Gemini product synthesis failed, falling back to dynamic parser:", err);
     }
+  } else {
+    console.warn("[ReviewLens] GEMINI_API_KEY is not configured in .env! Using dynamic URL pattern extractor.");
   }
 
-  // Graceful rule-based dynamic synthesis if Gemini key is absent or fails
+  // Graceful rule-based dynamic synthesis if Gemini key is absent
+  const resolvedTitle = info.name;
+  const imageUrl = getProductImageForCategory(resolvedTitle, productUrl);
   const productId = `dyn_${Date.now()}`;
+
   const names = [
     "Aarav Sharma", "Priya Nair", "Vikram Iyer", "Sneha Patel", "Rajesh Kumar",
     "Ananya Roy", "Mohammed Farhan", "Deepa Verma", "Karthik Subramanian", "Pooja Hegde",
@@ -157,7 +204,7 @@ Return pure JSON matching this exact structure:
   ];
 
   const templates = [
-    { rating: 5, verified: true, text: `Excellent quality ${info.name}! Packaging was pristine and delivered in 24 hours.` },
+    { rating: 5, verified: true, text: `Excellent quality ${resolvedTitle}! Packaging was pristine and delivered in 24 hours.` },
     { rating: 4, verified: true, text: `Value for money. Works as advertised, though instruction manual could be more detailed.` },
     { rating: 5, verified: true, text: `Using for 2 months now. Build quality is solid and performance exceeds expectations for price.` },
     { rating: 3, verified: true, text: `Average experience. Does the job, but finish feels slightly lightweight compared to premium alternatives.` },
@@ -191,8 +238,8 @@ Return pure JSON matching this exact structure:
     product: {
       id: productId,
       url: productUrl,
-      name: info.name,
-      imageUrl: info.imageUrl,
+      name: resolvedTitle,
+      imageUrl,
       store: info.store,
       averageRating: 4.2,
       reviewCount: reviews.length,
@@ -203,7 +250,6 @@ Return pure JSON matching this exact structure:
 
 /**
  * Generates an intelligent rule-based fallback report directly from the deterministic signals.
- * This guarantees the system is 100% resilient if the Gemini API key is missing or quotas are reached.
  */
 export function generateRuleBasedReport(
   product: ProductItem,
@@ -212,7 +258,6 @@ export function generateRuleBasedReport(
 ): GeminiAnalysisResponse {
   const { trustScore, trustLevel, riskSignals, stats } = deterministic;
 
-  // Extract real complaint keywords from lower-rated reviews
   const lowReviews = reviews.filter((r) => r.rating <= 3);
   const highReviews = reviews.filter((r) => r.rating >= 4);
 
@@ -225,13 +270,13 @@ export function generateRuleBasedReport(
       complaints.push("Initial burning smell or odor during operation");
     }
     if (lowReviews.some((r) => /break|crack|plastic|quality|fused|died/i.test(r.comment))) {
-      complaints.push("Durability vulnerabilities and plastic component fragility");
+      complaints.push("Durability vulnerabilities and component fragility");
     }
     if (lowReviews.some((r) => /leak|gasket|loose|lid/i.test(r.comment))) {
       complaints.push("Liquid leakage and loose fitting seals under load");
     }
     if (lowReviews.some((r) => /mic|noise|loud|call/i.test(r.comment))) {
-      complaints.push("Operating motor noise or microphone background interference");
+      complaints.push("Operating noise or microphone background interference");
     }
     if (lowReviews.some((r) => /cramp|stomach|scam|bogus|dehydration/i.test(r.comment))) {
       complaints.push("Digestive distress and unverified nutritional efficacy claims");
@@ -245,7 +290,6 @@ export function generateRuleBasedReport(
     complaints.push("Minor customer support turnaround delays during festive sales");
   }
 
-  // Extract positive themes
   const positiveThemes: string[] = [];
   if (highReviews.length > 0) {
     if (highReviews.some((r) => /battery|backup|charge/i.test(r.comment))) {
@@ -269,7 +313,6 @@ export function generateRuleBasedReport(
     positiveThemes.push("Appealing design aesthetic and user-friendly operation");
   }
 
-  // Suspicious patterns from risk signals
   const suspiciousPatterns = riskSignals
     .filter((s) => s.pointsDeducted > 0)
     .map((s) => ({
@@ -324,13 +367,13 @@ export async function generateGeminiTrustReport(
   const apiKey = process.env.GEMINI_API_KEY?.trim();
 
   // If no API key or placeholder key, immediately return rule-based report
-  if (!apiKey || apiKey === "your_gemini_api_key" || apiKey === "YOUR_GEMINI_API_KEY") {
+  if (!apiKey || apiKey === "your_gemini_api_key" || apiKey === "YOUR_GEMINI_API_KEY" || apiKey.length < 10) {
     console.info("Gemini API key not configured. Using deterministic rule-based analysis engine.");
     return generateRuleBasedReport(product, deterministic, reviews);
   }
 
   const genAI = new GoogleGenerativeAI(apiKey);
-  const modelName = process.env.GEMINI_MODEL || "gemini-1.5-flash";
+  const modelName = process.env.GEMINI_MODEL || "gemini-2.5-flash";
   const model = genAI.getGenerativeModel({
     model: modelName,
     generationConfig: {
@@ -339,7 +382,6 @@ export async function generateGeminiTrustReport(
     },
   });
 
-  // Prepare condensed review sample (up to 35 reviews)
   const cappedReviews = reviews.slice(0, 35).map((r, idx) => ({
     i: idx + 1,
     name: r.reviewerName,
@@ -405,7 +447,6 @@ ${JSON.stringify(cappedReviews, null, 2)}
 
 Produce the exact JSON response now.`;
 
-  // Attempt 1
   try {
     const result = await model.generateContent([
       { text: systemPrompt },
@@ -419,7 +460,6 @@ Produce the exact JSON response now.`;
   } catch (err1) {
     console.warn("Gemini attempt 1 parsing failed, attempting retry with schema enforcement:", err1);
 
-    // Attempt 2 (Retry)
     try {
       const retryResult = await model.generateContent([
         { text: systemPrompt },

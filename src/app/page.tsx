@@ -20,6 +20,18 @@ export default function Home() {
   const [notFound, setNotFound] = useState(false);
   const [generalError, setGeneralError] = useState<string | null>(null);
   const [searchedUrl, setSearchedUrl] = useState<string>("");
+  const [geminiActive, setGeminiActive] = useState<boolean | null>(null);
+
+  React.useEffect(() => {
+    fetch("/api/health")
+      .then((res) => res.json())
+      .then((data) => {
+        if (typeof data.geminiConfigured === "boolean") {
+          setGeminiActive(data.geminiConfigured);
+        }
+      })
+      .catch(() => {});
+  }, []);
 
   const handleAnalyze = async (productUrl: string) => {
     setIsLoading(true);
@@ -71,6 +83,13 @@ export default function Home() {
 
       {/* Main Content Area */}
       <main className="flex-1 w-full max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
+        {geminiActive === false && (
+          <div className="w-full max-w-3xl mx-auto mb-4 p-3 rounded-xl bg-amber-50 border border-amber-200 text-xs text-amber-800 flex items-center justify-between">
+            <span>
+              🔑 <strong>Gemini API Key is not set in `.env`</strong>. The app is currently using fallback templates. Paste your key in `.env` to unlock live Gemini analysis for any link!
+            </span>
+          </div>
+        )}
         {/* State 1: Loading Screen with Progressive Status */}
         {isLoading && <AnalysisLoading />}
 
