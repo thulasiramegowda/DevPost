@@ -49,7 +49,11 @@ async function checkDatabaseAvailable(): Promise<boolean> {
     return isDbHealthy;
   }
   try {
-    if (!process.env.DATABASE_URL || process.env.DATABASE_URL.includes("your_postgres")) {
+    if (
+      !process.env.DATABASE_URL ||
+      process.env.DATABASE_URL.includes("your_mysql_password") ||
+      process.env.DATABASE_URL.includes("your_postgres")
+    ) {
       isDbHealthy = false;
       lastDbCheck = now;
       return false;

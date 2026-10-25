@@ -1,20 +1,20 @@
-// Prisma schema for ReviewLens
+// Prisma schema for ReviewLens (MySQL)
 
 generator client {
   provider = "prisma-client-js"
 }
 
 datasource db {
-  provider = "postgresql"
+  provider = "mysql"
   url      = env("DATABASE_URL")
 }
 
 model Product {
-  id            String          @id @default(uuid())
-  url           String          @unique
-  name          String
-  imageUrl      String?
-  store         String
+  id            String          @id @default(uuid()) @db.VarChar(191)
+  url           String          @unique @db.VarChar(191)
+  name          String          @db.VarChar(255)
+  imageUrl      String?         @db.Text
+  store         String          @db.VarChar(100)
   averageRating Float
   reviewCount   Int
   createdAt     DateTime        @default(now())
@@ -25,11 +25,11 @@ model Product {
 }
 
 model Review {
-  id                 String   @id @default(uuid())
-  productId          String
-  reviewerName       String
+  id                 String   @id @default(uuid()) @db.VarChar(191)
+  productId          String   @db.VarChar(191)
+  reviewerName       String   @db.VarChar(191)
   rating             Int
-  comment            String
+  comment            String   @db.Text
   isVerifiedPurchase Boolean
   reviewDate         DateTime
   createdAt          DateTime @default(now())
@@ -41,10 +41,10 @@ model Review {
 }
 
 model AnalysisCache {
-  id             String   @id @default(uuid())
-  productId      String
+  id             String   @id @default(uuid()) @db.VarChar(191)
+  productId      String   @db.VarChar(191)
   trustScore     Int
-  trustLevel     String
+  trustLevel     String   @db.VarChar(50)
   geminiResponse Json
   riskSignals    Json
   createdAt      DateTime @default(now())
