@@ -263,6 +263,83 @@ export async function getProductById(id: string): Promise<{ product: ProductItem
 }
 
 /**
+ * Saves a newly analyzed dynamic product and its reviews (Memory & MySQL).
+ */
+export async function saveNewDynamicProduct(
+  product: ProductItem,
+  reviews: ReviewItem[]
+): Promise<void> {
+  const existingIndex = SEED_PRODUCTS.findIndex(
+    (p) => normalizeProductKey(p.url) === normalizeProductKey(product.url)
+  );
+
+  const seedFormat = {
+    id: product.id,
+    url: product.url,
+    name: product.name,
+    imageUrl: product.imageUrl || "",
+    store: product.store,
+    averageRating: product.averageRating,
+    reviewCount: reviews.length,
+    reviews: reviews.map((r) => ({
+      id: r.id,
+      reviewerName: r.reviewerName,
+      rating: r.rating,
+      comment: r.comment,
+      isVerifiedPurchase: r.isVerifiedPurchase,
+      reviewDate: r.reviewDate,
+    })),
+  };
+
+  if (existingIndex >= 0) {
+    SEED_PRODUCTS[existingIndex] = seedFormat;
+  } else {
+    SEED_PRODUCTS.unshift(seedFormat);
+  }
+
+  const useDb = await checkDatabaseAvailable();
+  if (useDb) {
+    try {
+      await prisma.product.upsert({
+        where: { url: product.url },
+        update: {
+          name: product.name,
+          imageUrl: product.imageUrl,
+          store: product.store,
+          averageRating: product.averageRating,
+          reviewCount: reviews.length,
+        },
+        create: {
+          id: product.id,
+          url: product.url,
+          name: product.name,
+          imageUrl: product.imageUrl,
+          store: product.store,
+          averageRating: product.averageRating,
+          reviewCount: reviews.length,
+        },
+      });
+
+      await prisma.review.deleteMany({ where: { productId: product.id } });
+
+      await prisma.review.createMany({
+        data: reviews.map((r) => ({
+          id: r.id,
+          productId: product.id,
+          reviewerName: r.reviewerName,
+          rating: r.rating,
+          comment: r.comment,
+          isVerifiedPurchase: r.isVerifiedPurchase,
+          reviewDate: new Date(r.reviewDate),
+        })),
+      });
+    } catch (e) {
+      console.warn("Could not persist dynamic product to MySQL DB:", e);
+    }
+  }
+}
+
+/**
  * Retrieves cached analysis if performed within 24 hours.
  */
 export async function getCachedAnalysis(productId: string): Promise<any | null> {

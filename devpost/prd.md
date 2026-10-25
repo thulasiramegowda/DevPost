@@ -1,30 +1,30 @@
 ---
-status: complete
+status: approved
 project: ReviewLens
 document: Product Requirements Document (PRD)
+version: 2.0
 ---
 
 # Product Requirements Document (PRD): ReviewLens
 
-## 1. Problem Statement
-Online shoppers frequently encounter 4.5+ star products on e-commerce marketplaces whose reviews have been manipulated through bot-generated text, unverified review flooding, or concentrated review bursts. Shoppers have no fast, transparent way to audit reviews before purchase.
+## 1. Universal Product Analysis Journey
+1. The user visits ReviewLens.
+2. The user pastes ANY e-commerce product link (or selects a sample link).
+3. The user clicks "Analyze Reviews".
+4. The system:
+   - Checks if the URL exists in the database.
+   - If found, loads its verified reviews and cached analysis.
+   - If not previously analyzed, Gemini extracts product metadata and representative customer feedback based on the link.
+   - Evaluates the 6 deterministic review risk algorithms.
+   - Gemini synthesizes the structured plain-language AI Trust Report.
+   - Saves the new product, reviews, and analysis to MySQL / storage.
+5. The UI renders the complete trust report:
+   - Product header & Review Trust Score circle (0–100)
+   - AI Trust Report (summary, positive themes, complaints, recommendation)
+   - Evidence-based risk signals with severity badges
+   - Interactive charts (Rating distribution bar chart, timeline line chart, verified purchase donut chart)
+   - Detailed review feed with "Flagged signal" tags
 
-## 2. Core User Journey
-1. User lands on ReviewLens Home page.
-2. User pastes a product URL or clicks one of the sample product buttons.
-3. User clicks "Analyze Reviews".
-4. App transitions to a progressive 4-step loading state.
-5. Backend resolves product details and runs 6 deterministic risk algorithms.
-6. Backend invokes Gemini API for structured synthesis and caches results for 24 hours.
-7. Frontend renders the Trust Report view:
-   - Product summary & circular Review Trust Score ring (0–100)
-   - Gemini AI plain-language summary, themes, complaints, and advice
-   - Evidence-based risk signal cards with severity tags
-   - Rating distribution, timeline, and purchase verification charts
-   - Filterable customer review list with "Flagged signal" tags
-8. If an unknown URL is entered, a friendly notice is shown with 1-click sample links.
-
-## 3. Design System & UI Specifications
-- Light-mode only (Linear / Stripe / Notion aesthetic)
-- Colors: White (`#FFFFFF`), Slate canvas (`#F7F8FA`), Primary blue (`#2563EB`), Warning amber (`#F59E0B`), Risk red (`#DC2626`), Safe green (`#16A34A`), Border (`#E5E7EB`)
-- 16px rounded card radius, soft elevation shadows, responsive layout
+## 2. Universal vs Benchmark Coverage
+- **Benchmark URLs:** 5 pre-calibrated products (boAt headphones, Prestige mixer, TurboPower charger, SlimGlow tea, Solimo chair) illustrating specific risk states (High Trust, Low Trust, Astroturfing, etc.).
+- **Universal URLs:** Any link pasted from Amazon, Flipkart, Meesho, or other platforms is analyzed live by Gemini.

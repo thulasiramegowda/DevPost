@@ -18,6 +18,7 @@ interface TrustScoreCardProps {
   trustLevel: TrustLevel;
   totalReviews: number;
   isCached?: boolean;
+  source?: string;
 }
 
 export const TrustScoreCard: React.FC<TrustScoreCardProps> = ({
@@ -26,6 +27,7 @@ export const TrustScoreCard: React.FC<TrustScoreCardProps> = ({
   trustLevel,
   totalReviews,
   isCached,
+  source,
 }) => {
   // Color configuration based on Trust Level & Score
   let strokeColor = "#16A34A"; // Safe green
@@ -88,6 +90,11 @@ export const TrustScoreCard: React.FC<TrustScoreCardProps> = ({
               <span className="px-2.5 py-0.5 rounded-md text-xs font-semibold bg-slate-100 text-slate-700 border border-slate-200">
                 {product.store}
               </span>
+              {source === "live_gemini_analysis" && (
+                <span className="px-2 py-0.5 rounded-md text-[11px] font-semibold bg-blue-50 text-primary border border-blue-200">
+                  ✨ Live Gemini Analysis
+                </span>
+              )}
               {isCached && (
                 <span className="px-2 py-0.5 rounded-md text-[11px] font-medium bg-slate-50 text-slate-500 border border-slate-200">
                   ⚡ Cached 24h

@@ -119,7 +119,7 @@ export const HeroAnalyze: React.FC<HeroAnalyzeProps> = ({
                 setUrl(e.target.value);
                 if (error) setError(null);
               }}
-              placeholder="Paste Amazon, Flipkart, or Meesho product URL here..."
+              placeholder="Paste ANY Amazon, Flipkart, Meesho, or online store URL..."
               className="w-full py-2.5 text-slate-900 placeholder:text-slate-400 text-sm sm:text-base bg-transparent focus:outline-none"
               disabled={isLoading}
             />

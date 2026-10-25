@@ -1,32 +1,24 @@
 ---
-status: complete
+status: approved
 project: ReviewLens
 document: Technical Specification
+version: 2.0
 ---
 
 # Technical Specification: ReviewLens
 
-## Tech Stack
-- **Framework:** Next.js 14+ (App Router)
-- **Database:** Prisma ORM with PostgreSQL (Vercel Postgres / Neon Postgres) + In-memory fallback
-- **Language:** TypeScript
-- **Styling:** Tailwind CSS
-- **AI Model:** Google Gemini API (`@google/generative-ai` / `gemini-1.5-flash`)
-- **Charts:** Recharts
-- **Validation:** Zod
+## Database & ORM
+- Prisma ORM configured for MySQL (and compatible with PostgreSQL / cloud databases).
+- Tables: `products`, `reviews`, `analysisCache`.
+- Dual storage architecture: Prisma MySQL queries with zero-downtime in-memory fallback.
 
-## API Endpoints
-- `POST /api/analyze`: Accepts `{ productUrl }`, runs deterministic checks, calls Gemini, caches result, returns report.
-- `GET /api/products`: Lists demo products with metadata.
-- `GET /api/products/[id]`: Returns single product details and cached analysis.
-- `GET /api/health`: System health ping.
-
-## Deterministic Scoring Engine
-- Total starting score: 100
-- Maximum deductions:
-  - Review Burst: up to 25 pts
-  - Duplicate / Similar text: up to 20 pts
-  - Unverified purchase ratio: up to 20 pts
-  - Rating distribution imbalance: up to 20 pts
-  - Reviewer repetition: up to 10 pts
-  - Extreme rating divergence: up to 5 pts
+## Universal URL Processing
+- Route: `POST /api/analyze`
+- If product URL exists in database: returns cached/stored product and reviews.
+- If product URL is new:
+  - Invokes `synthesizeProductAndReviewsFromUrl(productUrl)` in `src/lib/gemini.ts`.
+  - Gemini parses product title, store, rating, and generates 30 realistic Indian e-commerce reviews with varied dates and purchase verification statuses.
+  - Passes reviews to `analyzeReviewsDeterministically()` in `src/lib/trustEngine.ts`.
+  - Passes deterministic results back to Gemini for final shopper synthesis.
+  - Automatically persists the new product and reviews in MySQL (`prisma.product.create` and `prisma.review.createMany`).
+  - Returns the complete unified `TrustReportPayload`.

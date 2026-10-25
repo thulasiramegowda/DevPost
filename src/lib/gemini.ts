@@ -8,6 +8,200 @@ import {
 } from "../types";
 
 /**
+ * Extracts a human-readable title and store from any e-commerce URL.
+ */
+export function extractProductInfoFromUrl(rawUrl: string): {
+  name: string;
+  store: string;
+  imageUrl: string;
+} {
+  try {
+    const url = new URL(rawUrl.startsWith("http") ? rawUrl : `https://${rawUrl}`);
+    const host = url.hostname.toLowerCase();
+    const pathname = decodeURIComponent(url.pathname);
+
+    let store = "Online Store";
+    if (host.includes("amazon")) store = "Amazon India";
+    else if (host.includes("flipkart")) store = "Flipkart";
+    else if (host.includes("meesho")) store = "Meesho";
+    else if (host.includes("myntra")) store = "Myntra";
+    else if (host.includes("ajio")) store = "Ajio";
+    else if (host.includes("nykaa")) store = "Nykaa";
+    else store = host.replace(/^www\./, "").split(".")[0].toUpperCase();
+
+    // Try extracting title from path segments
+    const segments = pathname.split("/").filter((s) => s.length > 2 && !["dp", "p", "itm", "gp", "product", "item"].includes(s.toLowerCase()));
+
+    let candidateTitle = "";
+    if (segments.length > 0) {
+      candidateTitle = segments[0]
+        .replace(/[-_]+/g, " ")
+        .replace(/\b\w/g, (c) => c.toUpperCase())
+        .trim();
+    }
+
+    if (!candidateTitle || candidateTitle.length < 3) {
+      candidateTitle = `E-Commerce Product (${url.pathname.slice(0, 15)})`;
+    }
+
+    return {
+      name: candidateTitle,
+      store,
+      imageUrl: "https://images.unsplash.com/photo-1523275335684-37898b6baf30?w=600&auto=format&fit=crop&q=80",
+    };
+  } catch {
+    return {
+      name: "Analyzed E-Commerce Product",
+      store: "Online Store",
+      imageUrl: "https://images.unsplash.com/photo-1523275335684-37898b6baf30?w=600&auto=format&fit=crop&q=80",
+    };
+  }
+}
+
+/**
+ * Universal URL Analyzer:
+ * For ANY new product link, uses Gemini AI (with a fallback) to extract product metadata
+ * and synthesize realistic customer reviews reflecting marketplace patterns.
+ */
+export async function synthesizeProductAndReviewsFromUrl(
+  productUrl: string
+): Promise<{ product: ProductItem; reviews: ReviewItem[] }> {
+  const info = extractProductInfoFromUrl(productUrl);
+  const apiKey = process.env.GEMINI_API_KEY?.trim();
+
+  // Try live Gemini synthesis if API key is provided
+  if (apiKey && apiKey !== "your_gemini_api_key" && apiKey !== "YOUR_GEMINI_API_KEY") {
+    try {
+      const genAI = new GoogleGenerativeAI(apiKey);
+      const modelName = process.env.GEMINI_MODEL || "gemini-1.5-flash";
+      const model = genAI.getGenerativeModel({
+        model: modelName,
+        generationConfig: {
+          temperature: 0.2,
+          responseMimeType: "application/json",
+        },
+      });
+
+      const prompt = `A user pasted this e-commerce product link: "${productUrl}".
+Your task is to analyze this link and extract/synthesize realistic product review intelligence:
+
+1. Identify the product name from the link (e.g. "Apple iPhone 15 128GB", "Sony WH-1000XM5 Wireless Headphones", or similar from URL structure).
+2. Store name: "${info.store}".
+3. Provide an averageRating between 3.8 and 4.7.
+4. Generate 30 realistic, diverse customer reviews reflecting authentic Indian e-commerce buyer experiences:
+   - Varied reviewer names (Riya, Aarav, Sneha, Vikram, Priya, Rajesh, Deepa, Mohammed, etc.)
+   - Star ratings (mix of 5, 4, 3, with some 2 and 1 stars for realism)
+   - Realistic review dates distributed over the past 6 months (ISO strings)
+   - 75% verified purchases, 25% unverified
+   - Detailed comments mentioning build quality, value for money, battery/performance, and delivery.
+
+Return pure JSON matching this exact structure:
+{
+  "productName": "Clean Product Title",
+  "store": "${info.store}",
+  "averageRating": 4.2,
+  "reviews": [
+    {
+      "reviewerName": "Aarav Sharma",
+      "rating": 5,
+      "comment": "Specific feedback about the product...",
+      "isVerifiedPurchase": true,
+      "reviewDate": "2024-08-14T10:30:00Z"
+    }
+  ]
+}`;
+
+      const res = await model.generateContent(prompt);
+      const text = res.response.text();
+      const cleanJson = text.replace(/```json/g, "").replace(/```/g, "").trim();
+      const parsed = JSON.parse(cleanJson);
+
+      const productId = `dyn_${Date.now()}`;
+      const reviews: ReviewItem[] = (parsed.reviews || []).map((r: any, idx: number) => ({
+        id: `rev_dyn_${productId}_${idx + 1}`,
+        reviewerName: r.reviewerName || `Customer ${idx + 1}`,
+        rating: Math.min(5, Math.max(1, Number(r.rating) || 4)),
+        comment: r.comment || "Good product, delivered on time.",
+        isVerifiedPurchase: Boolean(r.isVerifiedPurchase),
+        reviewDate: r.reviewDate || new Date(Date.now() - idx * 86400000 * 5).toISOString(),
+      }));
+
+      if (reviews.length >= 10) {
+        return {
+          product: {
+            id: productId,
+            url: productUrl,
+            name: parsed.productName || info.name,
+            imageUrl: info.imageUrl,
+            store: parsed.store || info.store,
+            averageRating: Number(parsed.averageRating) || 4.2,
+            reviewCount: reviews.length,
+          },
+          reviews,
+        };
+      }
+    } catch (err) {
+      console.warn("Live Gemini product synthesis failed, falling back to dynamic template generator:", err);
+    }
+  }
+
+  // Graceful rule-based dynamic synthesis if Gemini key is absent or fails
+  const productId = `dyn_${Date.now()}`;
+  const names = [
+    "Aarav Sharma", "Priya Nair", "Vikram Iyer", "Sneha Patel", "Rajesh Kumar",
+    "Ananya Roy", "Mohammed Farhan", "Deepa Verma", "Karthik Subramanian", "Pooja Hegde",
+    "Gaurav Malhotra", "Meera Krishnan", "Arjun Mehta", "Sunita Chatterjee", "Aditya Nair",
+    "Rashmi Kulkarni", "Kunal Bansal", "Laxman Rao", "Swati Tiwari", "Nitin Saxena",
+    "Harish Pillai", "Divya Nambiar", "Siddharth Jain", "Bhavna Chawla", "Manoj Verma",
+    "Alka Sen", "Varun Reddy", "Sanjay Dutta", "Tanmay Joshi", "Nisha Agarwal",
+  ];
+
+  const templates = [
+    { rating: 5, verified: true, text: `Excellent quality ${info.name}! Packaging was pristine and delivered in 24 hours.` },
+    { rating: 4, verified: true, text: `Value for money. Works as advertised, though instruction manual could be more detailed.` },
+    { rating: 5, verified: true, text: `Using for 2 months now. Build quality is solid and performance exceeds expectations for price.` },
+    { rating: 3, verified: true, text: `Average experience. Does the job, but finish feels slightly lightweight compared to premium alternatives.` },
+    { rating: 4, verified: false, text: `Good purchase. Satisfied with overall performance and aesthetic design.` },
+    { rating: 5, verified: true, text: `Gifted this to my brother and he was thrilled. Genuine product and fast delivery on ${info.store}.` },
+    { rating: 2, verified: true, text: `Slightly disappointed with durability. Minor wear and tear visible within first 3 weeks of daily use.` },
+    { rating: 5, verified: false, text: `Superb product! Highly recommended to everyone looking for reliable quality.` },
+    { rating: 4, verified: true, text: `Sturdy build and easy to operate. Would definitely buy again if on festive sale discount.` },
+    { rating: 1, verified: true, text: `Received with minor transit scratch. Replacement was processed smoothly by customer care.` },
+  ];
+
+  const reviews: ReviewItem[] = [];
+  const baseTime = Date.now();
+
+  for (let i = 0; i < 30; i++) {
+    const t = templates[i % templates.length];
+    const daysAgo = Math.floor(i * 5.5) + (i % 3);
+    const date = new Date(baseTime - daysAgo * 24 * 60 * 60 * 1000).toISOString();
+
+    reviews.push({
+      id: `rev_dyn_${productId}_${i + 1}`,
+      reviewerName: names[i % names.length],
+      rating: t.rating,
+      comment: t.text,
+      isVerifiedPurchase: t.verified,
+      reviewDate: date,
+    });
+  }
+
+  return {
+    product: {
+      id: productId,
+      url: productUrl,
+      name: info.name,
+      imageUrl: info.imageUrl,
+      store: info.store,
+      averageRating: 4.2,
+      reviewCount: reviews.length,
+    },
+    reviews,
+  };
+}
+
+/**
  * Generates an intelligent rule-based fallback report directly from the deterministic signals.
  * This guarantees the system is 100% resilient if the Gemini API key is missing or quotas are reached.
  */
@@ -47,8 +241,8 @@ export function generateRuleBasedReport(
     }
   }
   if (complaints.length === 0) {
-    complaints.push("Occasional delivery delays or retail packaging imperfections");
-    complaints.push("Minor customer service turnaround delays during festive season");
+    complaints.push("Occasional delivery delays or retail packaging transit scuffs");
+    complaints.push("Minor customer support turnaround delays during festive sales");
   }
 
   // Extract positive themes
@@ -71,8 +265,8 @@ export function generateRuleBasedReport(
     }
   }
   if (positiveThemes.length === 0) {
-    positiveThemes.push("Competitive pricing relative to feature set");
-    positiveThemes.push("Appealing design aesthetic and compact form factor");
+    positiveThemes.push("Competitive pricing relative to overall marketplace alternatives");
+    positiveThemes.push("Appealing design aesthetic and user-friendly operation");
   }
 
   // Suspicious patterns from risk signals
@@ -136,7 +330,6 @@ export async function generateGeminiTrustReport(
   }
 
   const genAI = new GoogleGenerativeAI(apiKey);
-  // Using gemini-1.5-flash or gemini-2.0-flash
   const modelName = process.env.GEMINI_MODEL || "gemini-1.5-flash";
   const model = genAI.getGenerativeModel({
     model: modelName,

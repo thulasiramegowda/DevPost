@@ -138,6 +138,7 @@ export default function Home() {
               trustLevel={report.trustLevel}
               totalReviews={report.stats.totalReviews}
               isCached={report.isCached}
+              source={report.source}
             />
 
             {/* Middle Section: AI Trust Report Card */}

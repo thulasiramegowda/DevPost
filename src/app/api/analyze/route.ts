@@ -1,8 +1,16 @@
 import { NextRequest, NextResponse } from "next/server";
 import { AnalyzeRequestSchema, TrustReportPayload } from "@/types";
-import { findProductByUrl, getCachedAnalysis, saveAnalysisCache, getAllProducts } from "@/lib/db";
+import {
+  findProductByUrl,
+  getCachedAnalysis,
+  saveAnalysisCache,
+  saveNewDynamicProduct,
+} from "@/lib/db";
 import { analyzeReviewsDeterministically } from "@/lib/trustEngine";
-import { generateGeminiTrustReport } from "@/lib/gemini";
+import {
+  generateGeminiTrustReport,
+  synthesizeProductAndReviewsFromUrl,
+} from "@/lib/gemini";
 
 export const dynamic = "force-dynamic";
 
@@ -23,39 +31,35 @@ export async function POST(req: NextRequest) {
 
     const { productUrl } = parseResult.data;
 
-    // 1. Look up the product in database or seeded storage
-    const found = await findProductByUrl(productUrl);
+    // 1. Look up the product in database or pre-seeded storage
+    let found = await findProductByUrl(productUrl);
+    let analysisSource: "database" | "demo_seed" | "live_gemini_analysis" = "database";
 
+    // 2. If not found in database, dynamically analyze ANY product link via Gemini
     if (!found) {
-      const sampleProducts = await getAllProducts();
-      return NextResponse.json(
-        {
-          found: false,
-          error: "Product not found",
-          message:
-            "Live product reviews are not available in this demo. Try one of the sample product links below.",
-          sampleProducts: sampleProducts.map((p) => ({
-            id: p.id,
-            name: p.name,
-            url: p.url,
-            store: p.store,
-            averageRating: p.averageRating,
-            reviewCount: p.reviewCount,
-          })),
-        },
-        { status: 404 }
-      );
+      const synthesized = await synthesizeProductAndReviewsFromUrl(productUrl);
+      // Persist the newly synthesized product and reviews in MySQL/storage
+      await saveNewDynamicProduct(synthesized.product, synthesized.reviews);
+
+      found = {
+        product: synthesized.product,
+        reviews: synthesized.reviews,
+        source: "demo_seed",
+      };
+      analysisSource = "live_gemini_analysis";
+    } else {
+      analysisSource = found.source;
     }
 
-    const { product, reviews, source } = found;
+    const { product, reviews } = found;
 
-    // 2. Run deterministic review-risk checks
+    // 3. Run deterministic review-risk checks
     const deterministic = analyzeReviewsDeterministically(
       reviews,
       product.averageRating
     );
 
-    // 3. Mark flagged reasons on individual review items
+    // 4. Mark flagged reasons on individual review items
     const flaggedSet = new Set(deterministic.flaggedReviewIds);
     const enrichedReviews = reviews.map((r) => ({
       ...r,
@@ -64,7 +68,7 @@ export async function POST(req: NextRequest) {
         : [],
     }));
 
-    // 4. Check cache for recent analysis (within 24 hours)
+    // 5. Check cache for recent analysis (within 24 hours)
     let aiReport = null;
     let isCached = false;
     const cached = await getCachedAnalysis(product.id);
@@ -73,7 +77,7 @@ export async function POST(req: NextRequest) {
       aiReport = cached.geminiResponse;
       isCached = true;
     } else {
-      // 5. Invoke Gemini API
+      // 6. Invoke Gemini API for structured synthesis
       aiReport = await generateGeminiTrustReport(
         product,
         deterministic,
@@ -99,7 +103,7 @@ export async function POST(req: NextRequest) {
       stats: deterministic.stats,
       reviews: enrichedReviews,
       isCached,
-      source,
+      source: analysisSource,
     };
 
     return NextResponse.json(payload, { status: 200 });

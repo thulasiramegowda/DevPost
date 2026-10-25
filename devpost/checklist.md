@@ -1,25 +1,17 @@
 ---
-status: complete
+status: approved
 project: ReviewLens
-document: Hackathon Checklist
+document: Build Checklist
+version: 2.0
 ---
 
-# Devpost "Build With AI: Basics" Checklist
+# Build Checklist: Universal URL Analysis
 
-- [x] Initialized Git repository
-- [x] Project scaffolded with Next.js 14 App Router, TypeScript, and Tailwind CSS
-- [x] Prisma ORM schema configured for PostgreSQL (`products`, `reviews`, `analysisCache`)
-- [x] Seed data created for 5 realistic products with 30–50 Indian e-commerce reviews each
-- [x] Deterministic trust engine implemented with 6 weighted checks
-- [x] Google Gemini API integration built with Zod schema validation and graceful fallback
-- [x] 24-hour analysis caching implemented
-- [x] API routes created: `/api/analyze`, `/api/products`, `/api/products/[id]`, `/api/health`
-- [x] Minimalist light-mode UI implemented (Linear/Stripe/Notion inspired)
-- [x] Circular SVG Trust Score ring with color-coding
-- [x] Progressive 4-step loading state with skeleton loaders
-- [x] Recharts integration (Rating distribution, timeline velocity, verified donut)
-- [x] Review feed with "Flagged signal" badges and filters
-- [x] Friendly 404 state with clickable sample products
-- [x] Production build passes with `npm run build`
-- [x] Seed script runnable with `npm run db:seed`
-- [x] Documentation complete (`README.md`, `.env.example`, `devpost/`)
+- [x] Slice 1: Database schema with MySQL Prisma integration
+- [x] Slice 2: 5 benchmark products with 180+ reviews and seed script
+- [x] Slice 3: Deterministic trust score engine (6 weighted risk checks)
+- [x] Slice 4: Gemini AI structured report generation with retry & rule fallback
+- [x] Slice 5: Light-mode UI with circular score ring, Recharts, and review feed
+- [x] Slice 6: Universal URL support via Gemini Dynamic Product & Review Synthesizer
+- [x] Slice 7: Automatic persistence of new analyzed products into MySQL
+- [x] Slice 8: Production verification with `npm run build`

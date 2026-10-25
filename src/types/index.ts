@@ -96,7 +96,7 @@ export interface TrustReportPayload {
   stats: DeterministicResult["stats"];
   reviews: ReviewItem[];
   isCached?: boolean;
-  source: "database" | "demo_seed";
+  source: "database" | "demo_seed" | "live_gemini_analysis";
 }
 
 export const AnalyzeRequestSchema = z.object({
