@@ -35,8 +35,9 @@ ReviewLens is built as a single full-stack Next.js project designed for deployme
 - **Framework:** Next.js 14+ (App Router, Server-side API routes, React 18)
 - **Language:** TypeScript (Strict typing across client, server, and algorithms)
 - **Styling:** Tailwind CSS (Custom design system: Linear/Stripe/Notion minimalist light-mode aesthetic)
-- **Database & ORM:** Prisma ORM with PostgreSQL (Neon Postgres / Vercel Postgres) + Zero-downtime offline seed fallback
-- **AI Integration:** Google Generative AI SDK (`gemini-1.5-flash`) with structured JSON validation and rule-based fallback
+- **Database & ORM:** Prisma ORM with MySQL & PostgreSQL compatibility + Zero-downtime offline memory fallback
+- **AI Integration:** Google Generative AI (`gemini-2.5-flash`) with structured JSON schema validation and rule-based fallback
+- **Image Intelligence:** Live product image extraction engine from metadata (`og:image`, `twitter:image`, JSON-LD)
 - **Data Visualization:** Recharts (Rating distribution, Review timeline, Verified purchase donut)
 - **Validation:** Zod (Request payload and AI output schema validation)
 - **Icons:** Lucide React
@@ -126,12 +127,12 @@ Copy the example environment file:
 ```bash
 cp .env.example .env
 ```
-Edit `.env`:
+Edit `.env` (Never commit this file; your keys and credentials stay 100% private):
 ```env
-DATABASE_URL="postgresql://user:password@ep-sample.us-east-1.aws.neon.tech/neondb?sslmode=require"
+DATABASE_URL="mysql://root:your_mysql_password@localhost:3306/reviewlens"
 GEMINI_API_KEY="your_gemini_api_key_here"
 ```
-*(Note: If you run without a live Postgres connection or Gemini API key, ReviewLens automatically operates in self-contained demo mode using the rich in-memory seed dataset and rule-based synthesis).*
+*(Note: If you run without a live database or Gemini API key, ReviewLens gracefully operates in demo mode using its high-fidelity in-memory seed dataset and rule-based synthesis).*
 
 ### 3. Generate Prisma client & seed the database
 ```bash
