@@ -6,41 +6,7 @@ import {
   ProductItem,
   ReviewItem,
 } from "../types";
-
-/**
- * Returns a high-quality relevant product image based on product keywords and category.
- */
-export function getProductImageForCategory(name: string, url: string): string {
-  const text = (name + " " + url).toLowerCase();
-  if (text.includes("iphone") || text.includes("phone") || text.includes("mobile") || text.includes("samsung") || text.includes("pixel") || text.includes("oneplus") || text.includes("smartphone")) {
-    return "https://images.unsplash.com/photo-1592750475338-74b7b21085ab?w=600&auto=format&fit=crop&q=80";
-  }
-  if (text.includes("laptop") || text.includes("macbook") || text.includes("computer") || text.includes("dell") || text.includes("lenovo") || text.includes("hp")) {
-    return "https://images.unsplash.com/photo-1496181133206-80ce9b88a853?w=600&auto=format&fit=crop&q=80";
-  }
-  if (text.includes("headphone") || text.includes("earphone") || text.includes("earbuds") || text.includes("audio") || text.includes("sound") || text.includes("boat") || text.includes("sony")) {
-    return "https://images.unsplash.com/photo-1505740420928-5e560c06d30e?w=600&auto=format&fit=crop&q=80";
-  }
-  if (text.includes("watch") || text.includes("smartwatch") || text.includes("noise") || text.includes("fire-boltt")) {
-    return "https://images.unsplash.com/photo-1523275335684-37898b6baf30?w=600&auto=format&fit=crop&q=80";
-  }
-  if (text.includes("shoe") || text.includes("sneaker") || text.includes("boot") || text.includes("nike") || text.includes("puma") || text.includes("footwear")) {
-    return "https://images.unsplash.com/photo-1542291026-7eec264c27ff?w=600&auto=format&fit=crop&q=80";
-  }
-  if (text.includes("chair") || text.includes("table") || text.includes("desk") || text.includes("furniture")) {
-    return "https://images.unsplash.com/photo-1580481077195-c3a82da9189b?w=600&auto=format&fit=crop&q=80";
-  }
-  if (text.includes("mixer") || text.includes("blender") || text.includes("grinder") || text.includes("cooker") || text.includes("kitchen")) {
-    return "https://images.unsplash.com/photo-1570222094114-d054a817e56b?w=600&auto=format&fit=crop&q=80";
-  }
-  if (text.includes("charger") || text.includes("cable") || text.includes("adapter") || text.includes("power bank")) {
-    return "https://images.unsplash.com/photo-1583863788434-e58a36330cf0?w=600&auto=format&fit=crop&q=80";
-  }
-  if (text.includes("tea") || text.includes("coffee") || text.includes("drink") || text.includes("food") || text.includes("detox")) {
-    return "https://images.unsplash.com/photo-1544787219-7f47ccb76574?w=600&auto=format&fit=crop&q=80";
-  }
-  return "https://images.unsplash.com/photo-1526170375885-4d8ecf77b99f?w=600&auto=format&fit=crop&q=80";
-}
+import { fetchLiveProductImage, getSmartCategoryImage } from "./imageFetcher";
 
 /**
  * Extracts a human-readable title and store from any e-commerce URL.
@@ -65,11 +31,21 @@ export function extractProductInfoFromUrl(rawUrl: string): {
     else store = host.replace(/^www\./, "").split(".")[0].toUpperCase();
 
     // Try extracting title from path segments
-    const segments = pathname.split("/").filter((s) => s.length > 2 && !["dp", "p", "itm", "gp", "product", "item"].includes(s.toLowerCase()));
+    const segments = pathname
+      .split("/")
+      .filter(
+        (s) =>
+          s.length > 2 &&
+          !["dp", "p", "itm", "gp", "product", "item", "mailers", "buy"].includes(
+            s.toLowerCase()
+          )
+      );
 
     let candidateTitle = "";
     if (segments.length > 0) {
-      candidateTitle = segments[0]
+      // Find the most descriptive segment (usually longest or last)
+      const bestSegment = segments.reduce((a, b) => (b.length > a.length ? b : a), "");
+      candidateTitle = bestSegment
         .replace(/[-_]+/g, " ")
         .replace(/\b\w/g, (c) => c.toUpperCase())
         .trim();
@@ -79,7 +55,7 @@ export function extractProductInfoFromUrl(rawUrl: string): {
       candidateTitle = `E-Commerce Product (${url.pathname.slice(0, 15)})`;
     }
 
-    const imageUrl = getProductImageForCategory(candidateTitle, rawUrl);
+    const imageUrl = getSmartCategoryImage(candidateTitle, rawUrl);
 
     return {
       name: candidateTitle,
@@ -90,7 +66,7 @@ export function extractProductInfoFromUrl(rawUrl: string): {
     return {
       name: "Analyzed E-Commerce Product",
       store: "Online Store",
-      imageUrl: "https://images.unsplash.com/photo-1526170375885-4d8ecf77b99f?w=600&auto=format&fit=crop&q=80",
+      imageUrl: "https://images.unsplash.com/photo-1505740420928-5e560c06d30e?w=600&auto=format&fit=crop&q=80",
     };
   }
 }
@@ -103,13 +79,15 @@ export function extractProductInfoFromUrl(rawUrl: string): {
 export async function synthesizeProductAndReviewsFromUrl(
   productUrl: string
 ): Promise<{ product: ProductItem; reviews: ReviewItem[] }> {
+  // 1. Fetch live authentic product image directly from page meta tags (og:image, twitter:image, JSON-LD)
+  const liveImage = await fetchLiveProductImage(productUrl);
   const info = extractProductInfoFromUrl(productUrl);
   const apiKey = process.env.GEMINI_API_KEY?.trim();
 
   // Try live Gemini synthesis if API key is provided
   if (apiKey && apiKey !== "your_gemini_api_key" && apiKey !== "YOUR_GEMINI_API_KEY" && apiKey.length > 10) {
     try {
-      console.log(`[ReviewLens Gemini] Live analyzing URL with Gemini 1.5 Flash: ${productUrl}`);
+      console.log(`[ReviewLens Gemini] Live analyzing URL with Gemini 2.5 Flash: ${productUrl}`);
       const genAI = new GoogleGenerativeAI(apiKey);
       const modelName = process.env.GEMINI_MODEL || "gemini-2.5-flash";
       const model = genAI.getGenerativeModel({
@@ -123,15 +101,15 @@ export async function synthesizeProductAndReviewsFromUrl(
       const prompt = `A user pasted this e-commerce product link into ReviewLens: "${productUrl}".
 
 Your task is to analyze this exact product link and generate comprehensive review intelligence:
-1. Identify the EXACT product title, brand, and model from the URL slug/path (e.g. "Apple iPhone 15 128GB Black", "Sony WH-1000XM5 Noise Canceling Headphones", "Nike Air Pegasus 40 Running Shoes").
+1. Identify the EXACT product title, brand, and model from the URL slug/path (e.g. "Roadster Women One Toe Flats with Buckles", "Apple iPhone 15 128GB Black", "Sony WH-1000XM5 Noise Canceling Headphones").
 2. Store name: "${info.store}".
-3. Provide the typical real-world marketplace rating for this specific product (e.g. 4.3).
+3. Provide the typical real-world marketplace rating for this specific product (e.g. 4.2).
 4. Generate 30 REALISTIC customer reviews tailored specifically to THIS exact product:
    - Varied reviewer names from Indian e-commerce (Aarav, Sneha, Priya, Vikram, Rajesh, Deepa, Mohammed, Kavita, etc.)
    - Ratings (realistic spread: some 5★, 4★, 3★, 2★, 1★)
    - Dates spread across the past 6 months (ISO 8601 strings)
    - Verified purchases (mix of verified and unverified)
-   - Authentic comments mentioning genuine pros, specific features of this product, and authentic complaints (e.g. for a phone: screen quality, battery drain, camera in low light, heating; for shoes: sizing, sole grip; for headphones: ANC, ear cushion comfort).
+   - Authentic comments mentioning genuine pros, specific features of this product, and authentic complaints.
 
 Return ONLY raw JSON matching this structure:
 {
@@ -155,7 +133,8 @@ Return ONLY raw JSON matching this structure:
       const parsed = JSON.parse(cleanJson);
 
       const resolvedTitle = parsed.productName || info.name;
-      const imageUrl = getProductImageForCategory(resolvedTitle, productUrl);
+      // Prefer the live scraped image; otherwise use smart semantic category image
+      const imageUrl = liveImage || getSmartCategoryImage(resolvedTitle, productUrl);
       const productId = `dyn_${Date.now()}`;
 
       const reviews: ReviewItem[] = (parsed.reviews || []).map((r: any, idx: number) => ({
@@ -168,7 +147,7 @@ Return ONLY raw JSON matching this structure:
       }));
 
       if (reviews.length >= 10) {
-        console.log(`[ReviewLens Gemini] Successfully analyzed ${resolvedTitle} with ${reviews.length} Gemini-generated reviews!`);
+        console.log(`[ReviewLens Gemini] Successfully analyzed ${resolvedTitle} with image: ${imageUrl}`);
         return {
           product: {
             id: productId,
@@ -191,7 +170,7 @@ Return ONLY raw JSON matching this structure:
 
   // Graceful rule-based dynamic synthesis if Gemini key is absent
   const resolvedTitle = info.name;
-  const imageUrl = getProductImageForCategory(resolvedTitle, productUrl);
+  const imageUrl = liveImage || getSmartCategoryImage(resolvedTitle, productUrl);
   const productId = `dyn_${Date.now()}`;
 
   const names = [
