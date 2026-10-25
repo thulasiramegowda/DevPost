@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { Navbar } from "@/components/Navbar";
 import { HeroAnalyze } from "@/components/HeroAnalyze";
 import { AnalysisLoading } from "@/components/AnalysisLoading";
@@ -12,6 +12,7 @@ import { ReviewsList } from "@/components/ReviewsList";
 import { NotFoundBanner } from "@/components/NotFoundBanner";
 import { Footer } from "@/components/Footer";
 import { TrustReportPayload } from "@/types";
+import { HistoryItem } from "@/components/RecentHistory";
 import { AlertTriangle, ArrowLeft } from "lucide-react";
 
 export default function Home() {
@@ -21,8 +22,17 @@ export default function Home() {
   const [generalError, setGeneralError] = useState<string | null>(null);
   const [searchedUrl, setSearchedUrl] = useState<string>("");
   const [geminiActive, setGeminiActive] = useState<boolean | null>(null);
+  const [historyItems, setHistoryItems] = useState<HistoryItem[]>([]);
 
-  React.useEffect(() => {
+  // Load history from localStorage and health on mount
+  useEffect(() => {
+    try {
+      const stored = localStorage.getItem("reviewlens_history");
+      if (stored) {
+        setHistoryItems(JSON.parse(stored));
+      }
+    } catch {}
+
     fetch("/api/health")
       .then((res) => res.json())
       .then((data) => {
@@ -48,7 +58,7 @@ export default function Home() {
 
       const data = await response.json();
 
-      if (response.status === 404 || !data.found && data.message) {
+      if (response.status === 404 || (!data.found && data.message)) {
         setNotFound(true);
         setReport(null);
       } else if (!response.ok) {
@@ -57,7 +67,29 @@ export default function Home() {
       } else {
         setReport(data);
         setNotFound(false);
-        // Smooth scroll to top of report
+
+        // Add to history
+        const newItem: HistoryItem = {
+          id: data.product.id || `hist_${Date.now()}`,
+          productName: data.product.name,
+          store: data.product.store,
+          url: data.product.url,
+          imageUrl: data.product.imageUrl || "",
+          trustScore: data.trustScore,
+          trustLevel: data.trustLevel,
+          analyzedAt: new Date().toISOString(),
+        };
+
+        setHistoryItems((prev) => {
+          const filtered = prev.filter((item) => item.url.toLowerCase() !== data.product.url.toLowerCase());
+          const updated = [newItem, ...filtered].slice(0, 9);
+          try {
+            localStorage.setItem("reviewlens_history", JSON.stringify(updated));
+          } catch {}
+          return updated;
+        });
+
+        // Smooth scroll to top
         window.scrollTo({ top: 0, behavior: "smooth" });
       }
     } catch (err: any) {
@@ -66,6 +98,13 @@ export default function Home() {
     } finally {
       setIsLoading(false);
     }
+  };
+
+  const handleClearHistory = () => {
+    setHistoryItems([]);
+    try {
+      localStorage.removeItem("reviewlens_history");
+    } catch {}
   };
 
   const handleReset = () => {
@@ -90,6 +129,7 @@ export default function Home() {
             </span>
           </div>
         )}
+
         {/* State 1: Loading Screen with Progressive Status */}
         {isLoading && <AnalysisLoading />}
 
@@ -118,28 +158,34 @@ export default function Home() {
               onSelectProduct={(sampleUrl) => handleAnalyze(sampleUrl)}
               onClose={() => setNotFound(false)}
             />
-            {/* Show Hero Search below notice so user can edit or retry */}
             <HeroAnalyze
               onAnalyze={handleAnalyze}
               isLoading={isLoading}
               initialUrl={searchedUrl}
+              historyItems={historyItems}
+              onClearHistory={handleClearHistory}
             />
           </div>
         )}
 
         {/* State 4: Home / Analyze Hero View (when no report and not loading) */}
         {!isLoading && !report && !notFound && !generalError && (
-          <HeroAnalyze onAnalyze={handleAnalyze} isLoading={isLoading} />
+          <HeroAnalyze
+            onAnalyze={handleAnalyze}
+            isLoading={isLoading}
+            historyItems={historyItems}
+            onClearHistory={handleClearHistory}
+          />
         )}
 
-        {/* State 5: Trust Report Page (Most important view) */}
+        {/* State 5: Trust Report Page */}
         {!isLoading && report && (
           <div className="space-y-8 animate-fadeIn">
             {/* Navigation back bar */}
             <div className="flex items-center justify-between">
               <button
                 onClick={handleReset}
-                className="inline-flex items-center gap-2 text-xs font-semibold text-slate-600 hover:text-primary transition-colors bg-white px-3.5 py-2 rounded-xl border border-border shadow-sm"
+                className="inline-flex items-center gap-2 text-xs font-semibold text-slate-600 hover:text-primary transition-colors bg-white px-3.5 py-2 rounded-xl border border-border shadow-sm hover:shadow"
               >
                 <ArrowLeft className="w-4 h-4" />
                 <span>Check Another Product</span>
