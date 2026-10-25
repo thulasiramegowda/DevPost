@@ -1,0 +1,56 @@
+// Prisma schema for ReviewLens
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model Product {
+  id            String          @id @default(uuid())
+  url           String          @unique
+  name          String
+  imageUrl      String?
+  store         String
+  averageRating Float
+  reviewCount   Int
+  createdAt     DateTime        @default(now())
+  reviews       Review[]
+  analyses      AnalysisCache[]
+
+  @@map("products")
+}
+
+model Review {
+  id                 String   @id @default(uuid())
+  productId          String
+  reviewerName       String
+  rating             Int
+  comment            String
+  isVerifiedPurchase Boolean
+  reviewDate         DateTime
+  createdAt          DateTime @default(now())
+
+  product Product @relation(fields: [productId], references: [id], onDelete: Cascade)
+
+  @@index([productId])
+  @@map("reviews")
+}
+
+model AnalysisCache {
+  id             String   @id @default(uuid())
+  productId      String
+  trustScore     Int
+  trustLevel     String
+  geminiResponse Json
+  riskSignals    Json
+  createdAt      DateTime @default(now())
+
+  product Product @relation(fields: [productId], references: [id], onDelete: Cascade)
+
+  @@index([productId])
+  @@map("analysisCache")
+}
