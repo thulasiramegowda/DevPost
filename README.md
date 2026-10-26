@@ -9,10 +9,10 @@
 
 ReviewLens was created collaboratively by a **two-member team**:
 
-| Team Member | GitHub Profile | Primary Areas of Contribution |
-| :--- | :--- |
-| **Thulasi G T** | [@thulasiramegowda](https://github.com/thulasiramegowda) |
-| **Bhoomika G J** | @[bhoomikagj29](https://github.com/bhoomikagj29-ux) | 
+Team Member :
+
+**Thulasi G T** --> [@thulasiramegowda](https://github.com/thulasiramegowda) 
+**Bhoomika G J** --> [@bhoomikagj29](https://github.com/bhoomikagj29-ux) 
 
 > [!NOTE]
 > **Collaboration Model:** ReviewLens was developed as an intensive pair-programming collaboration between both team members. While Git commits were pushed through the primary repository account (`thulasiramegowda`), the project reflects shared conceptualization, algorithm design, interface refinement, and multi-store testing. Both team members contributed to bringing ReviewLens from idea to working proof of concept.
