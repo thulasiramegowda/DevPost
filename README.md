@@ -10,9 +10,9 @@
 ReviewLens was created collaboratively by a **two-member team**:
 
 | Team Member | GitHub Profile | Primary Areas of Contribution |
-| :--- | :--- | :--- |
-| **Thulasiram Egowda** | [@thulasiramegowda](https://github.com/thulasiramegowda) | Full-stack architecture, Next.js App Router, Gemini API prompt engineering, MySQL Prisma integration, Git repository management |
-| **`[Teammate Full Name]`** | `@[teammate-github-username]` | `[To be confirmed: e.g. Product design, review-risk algorithm research, UI/UX implementation, cross-platform URL testing & validation]` |
+| :--- | :--- |
+| **Thulasi G T** | [@thulasiramegowda](https://github.com/thulasiramegowda) |
+| **Bhoomika G J** | @[bhoomikagj29](https://github.com/bhoomikagj29-ux) | 
 
 > [!NOTE]
 > **Collaboration Model:** ReviewLens was developed as an intensive pair-programming collaboration between both team members. While Git commits were pushed through the primary repository account (`thulasiramegowda`), the project reflects shared conceptualization, algorithm design, interface refinement, and multi-store testing. Both team members contributed to bringing ReviewLens from idea to working proof of concept.
