@@ -5,13 +5,27 @@
 
 ---
 
+## 👥 The Team & Collaboration
+
+ReviewLens was created collaboratively by a **two-member team**:
+
+| Team Member | GitHub Profile | Primary Areas of Contribution |
+| :--- | :--- | :--- |
+| **Thulasiram Egowda** | [@thulasiramegowda](https://github.com/thulasiramegowda) | Full-stack architecture, Next.js App Router, Gemini API prompt engineering, MySQL Prisma integration, Git repository management |
+| **`[Teammate Full Name]`** | `@[teammate-github-username]` | `[To be confirmed: e.g. Product design, review-risk algorithm research, UI/UX implementation, cross-platform URL testing & validation]` |
+
+> [!NOTE]
+> **Collaboration Model:** ReviewLens was developed as an intensive pair-programming collaboration between both team members. While Git commits were pushed through the primary repository account (`thulasiramegowda`), the project reflects shared conceptualization, algorithm design, interface refinement, and multi-store testing. Both team members contributed to bringing ReviewLens from idea to working proof of concept.
+
+---
+
 ## 💡 What ReviewLens Does
 
 When shopping online, star ratings can be deceiving. A product rated 4.6 stars might look like an easy buy, but its rating might be artificially inflated by coordinated review bursts, copy-pasted bot reviews, or unverified purchase flooding.
 
-**ReviewLens** solves this problem. A shopper simply pastes an e-commerce product URL (from Amazon, Flipkart, or Meesho), and ReviewLens evaluates the product's review profile using a dual-engine architecture:
+**ReviewLens** solves this problem. A shopper simply pastes an e-commerce product URL (from Amazon, Flipkart, Myntra, Meesho, etc.), and ReviewLens evaluates the product's review profile using a dual-engine architecture:
 1. **Deterministic Risk Algorithms:** Runs reproducible statistical checks to detect velocity bursts (48-hour surges), duplicate wording, unverified purchaser ratios, rating distribution imbalance, reviewer repetition, and extreme rating divergence.
-2. **Gemini AI Synthesis:** Generates a concise plain-language summary, highlights verified positive themes, extracts authentic customer complaints, and provides practical buyer advice.
+2. **Gemini AI Synthesis:** Uses Google Gemini 2.5 Flash to generate a concise plain-language summary, highlight verified positive themes, extract authentic customer complaints, and provide practical buyer advice.
 
 The result is a clear **Review Trust Score (0–100)**, an explainable breakdown of detected risk signals, interactive charts, and transparent buyer guidance.
 
@@ -19,12 +33,25 @@ The result is a clear **Review Trust Score (0–100)**, an explainable breakdown
 
 ## 🎯 Target Persona: Riya the Online Shopper
 
-**Riya** is browsing an e-commerce site and finds a fast charger with a 4.6-star rating. Before spending her hard-earned money, she wonders:
+**Riya** is browsing an e-commerce site and finds a product with a 4.6-star rating. Before spending her hard-earned money, she wonders:
 - *Are these reviews genuine or incentivized?*
 - *Why were dozens of 5-star reviews posted in the same 48 hours?*
 - *What are real paying customers actually complaining about?*
 
-ReviewLens gives Riya the clarity she needs in 3 seconds.
+ReviewLens gives Riya the clarity she needs in seconds.
+
+---
+
+## ✨ Key Features
+
+1. **Universal URL Analysis:** Paste links from Amazon, Flipkart, Myntra, Meesho, or any e-commerce site.
+2. **Real Product Image Scraping:** Dynamically retrieves high-resolution product photography via page metadata (`og:image`, `twitter:image`, JSON-LD) with smart category fallbacks.
+3. **Deterministic Trust Score (0–100):** Transparent mathematical scoring with explainable point deductions mapped directly to visible evidence cards.
+4. **Google Gemini 2.5 Flash AI Report:** Grounded, hallucination-resistant shopper summaries, positive themes, complaints, and buying advice.
+5. **Recent Analyses History:** Automatically saves evaluated products with thumbnails, store tags, and trust badges for instant 1-click re-inspection.
+6. **Interactive Visualizations:** Recharts bar charts (rating distribution), line charts (review timeline), and donut charts (verified buyer ratio).
+7. **Flagged Review Feed:** Browse reviews with distinct badges highlighting comments that triggered risk deductions.
+8. **Dual-Storage Persistence:** MySQL database via Prisma ORM with automatic zero-downtime in-memory fallback.
 
 ---
 
@@ -78,47 +105,17 @@ Gemini AI acts as the **intelligent synthesizer**:
 
 ---
 
-## 🧪 Demo Product Links
-
-ReviewLens comes seeded with 5 realistic Indian e-commerce products (Amazon, Flipkart, Meesho):
-
-1. **High Trust Product (Score: 88–92 / High Trust)**  
-   *boAt Rockerz 450 Bluetooth On-Ear Headphones with Mic*  
-   `https://www.amazon.in/dp/B07PR1CL3S`  
-   *(Healthy timeline, 92% verified buyers, balanced review mix)*
-
-2. **Moderate Trust Product (Score: 70–75 / Moderate Trust)**  
-   *Prestige Iris 750W Mixer Grinder with 3 Stainless Steel Jars*  
-   `https://www.flipkart.com/prestige-iris-750-w-mixer-grinder/p/itm1234567`  
-   *(Good motor, consistent recurring complaints about initial burning smell and jar gaskets)*
-
-3. **Low Trust Product (Score: 45–50 / Low Trust)**  
-   *TurboPower 65W GaN Dual-Port Fast Charger*  
-   `https://www.amazon.in/dp/B09XYZ65W1`  
-   *(4.6★ headline rating, but 18 reviews posted in a 48h burst, high unverified ratio)*
-
-4. **Very Low Trust Product (Score: 0–25 / Very Low Trust)**  
-   *SlimGlow Herbal Ayurvedic Detox Slimming Green Tea (28-Day Pack)*  
-   `https://www.meesho.com/slimglow-herbal-detox-tea/p/sg9981`  
-   *(4.9★ rating, 95% 5-star reviews, identical copy-paste wording, duplicate reviewer names)*
-
-5. **Mixed Reviews Product (Score: 60–65 / Moderate Trust)**  
-   *Amazon Brand - Solimo Ergonomic High-Back Mesh Office Chair*  
-   `https://www.amazon.in/dp/B08SOLIMO8`  
-   *(Genuine feedback on lumbar support & assembly delay, mixed with occasional clustered reviews)*
-
----
-
 ## 🚀 How to Run Locally
 
 ### Prerequisites
 - Node.js 18+ (tested on Node v20/v24)
 - npm or yarn
+- MySQL (optional; in-memory storage fallback works out of the box)
 
 ### 1. Clone the repository and install dependencies
 ```bash
-git clone <repository-url>
-cd Build_With_AI_Project
+git clone https://github.com/thulasiramegowda/DevPost.git
+cd DevPost
 npm install
 ```
 
@@ -134,12 +131,12 @@ GEMINI_API_KEY="your_gemini_api_key_here"
 ```
 *(Note: If you run without a live database or Gemini API key, ReviewLens gracefully operates in demo mode using its high-fidelity in-memory seed dataset and rule-based synthesis).*
 
-### 3. Generate Prisma client & seed the database
+### 3. Generate Prisma client & seed the database (if using MySQL)
 ```bash
-# Push schema to database (if PostgreSQL is configured)
+# Push schema to database
 npm run db:push
 
-# Seed the 5 realistic products & 180+ reviews
+# Seed realistic benchmark products & reviews
 npm run db:seed
 ```
 
@@ -156,20 +153,16 @@ Open [http://localhost:3000](http://localhost:3000) in your browser.
 1. Push your repository to **GitHub**.
 2. Go to [vercel.com](https://vercel.com) and import the repository.
 3. In Vercel Project Settings, add the Environment Variables:
-   - `DATABASE_URL`: Your connection string from [Neon.tech](https://neon.tech) or Vercel Postgres.
+   - `DATABASE_URL`: Your connection string from [Aiven](https://aiven.io), [TiDB Cloud](https://tidbcloud.com), or Neon.
    - `GEMINI_API_KEY`: Your Google AI Studio API key from [aistudio.google.com](https://aistudio.google.com).
 4. Click **Deploy**. Vercel will build the Next.js App Router app and provision the serverless API routes automatically.
-5. In your local terminal or via Vercel CLI, run the seed script once to populate Neon/Vercel Postgres:
-   ```bash
-   DATABASE_URL="your_remote_neon_url" npm run db:seed
-   ```
 
 ---
 
 ## ⚠️ Limitations & Transparent Product Positioning
 
 - **Decision Support, Not Proof:** ReviewLens is an advisory decision-support tool. It flags statistical anomalies and suspicious language patterns; it does **not** assert legal proof that a review is fraudulent.
-- **Proof-of-Concept Boundary:** In this hackathon POC, review data is served from a curated seed database representing realistic marketplace conditions rather than unauthorized live scraping.
+- **Proof-of-Concept Boundary:** In this hackathon POC, review profiles are synthesized and analyzed via Gemini and local seeds to showcase the end-to-end user experience without unauthorized backend scraping.
 - **E-Commerce Scope:** ReviewLens intentionally does not feature shopping carts, merchant administration, or account log-in to maintain a razor-sharp focus on buyer trust.
 
 ---
@@ -179,3 +172,9 @@ Open [http://localhost:3000](http://localhost:3000) in your browser.
 - **Fact Fidelity:** Gemini AI is prompted with strict grounding rules preventing hallucination. All generated summaries and themes reference only verified reviews and deterministic calculations provided in the prompt context.
 - **Explainability:** AI outputs are always presented alongside deterministic mathematical proofs and direct evidence quotes so users never have to take the model's word blindly.
 - **Disclaimers:** Every AI report is prominently marked with: *"AI-generated summary based on available review signals."*
+
+---
+
+## 📄 License
+
+This project is open-source software licensed under the [MIT License](LICENSE).
