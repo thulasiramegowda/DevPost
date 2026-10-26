@@ -21,7 +21,7 @@ team_size: 2
 - **Public GitHub Repository URL:**  
   `https://github.com/thulasiramegowda/DevPost`
 - **Demo Video URL:**  
-  `[Pending: Upload your 1–3 minute unlisted YouTube or Loom link here]`
+  `https://vimeo.com/1239530905?share=copy&fl=sv&fe=ci`
 - **Optional Live Deployment URL:**  
   `[Optional: Add Vercel deployment URL if deployed]`
 

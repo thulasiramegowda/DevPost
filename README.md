@@ -1,27 +1,51 @@
+<div align="center">
+
+![ReviewLens Banner](./assets/banner.png)
+
 # ReviewLens 🔍
 
-**AI-Powered Review Trust Checker for Online Shoppers**  
-*Proof of Concept for the Devpost "Build With AI: Basics" Hackathon*
+### AI-Powered Review Trust Checker for Online Shoppers
+**Know if the reviews can be trusted.**
+
+[![Demo Video](https://img.shields.io/badge/Vimeo-Watch%202--Min%20Demo%20Video-1AB7EA?style=for-the-badge&logo=vimeo&logoColor=white)](https://vimeo.com/1239530905?share=copy&fl=sv&fe=ci)
+[![Next.js 14](https://img.shields.io/badge/Next.js-14.2-black?style=for-the-badge&logo=next.js&logoColor=white)](https://nextjs.org/)
+[![TypeScript](https://img.shields.io/badge/TypeScript-5.6-3178C6?style=for-the-badge&logo=typescript&logoColor=white)](https://www.typescriptlang.org/)
+[![Gemini 2.5 Flash](https://img.shields.io/badge/Google%20Gemini-2.5%20Flash-4285F4?style=for-the-badge&logo=google&logoColor=white)](https://aistudio.google.com/)
+[![Tailwind CSS](https://img.shields.io/badge/Tailwind_CSS-3.4-38B2AC?style=for-the-badge&logo=tailwind-css&logoColor=white)](https://tailwindcss.com/)
+[![Prisma ORM](https://img.shields.io/badge/Prisma-MySQL-2D3748?style=for-the-badge&logo=prisma&logoColor=white)](https://www.prisma.io/)
+[![License: MIT](https://img.shields.io/badge/License-MIT-green.svg?style=for-the-badge)](LICENSE)
+
+*Proof of Concept built for the Devpost **"Build With AI: Basics"** Hackathon*
 
 ---
 
-## 👥 The Team & Collaboration
+</div>
+
+## 📺 2-Minute Demo Video
+
+> 🎬 **Watch the full demonstration on Vimeo:**  
+> **[https://vimeo.com/1239530905](https://vimeo.com/1239530905?share=copy&fl=sv&fe=ci)**
+>
+> *Watch ReviewLens analyze live e-commerce product links in real time: dynamic OpenGraph image extraction, 6 deterministic mathematical risk checks, and Google Gemini 2.5 Flash review synthesis.*
+
+---
+
+## 👥 The Team
 
 ReviewLens was created collaboratively by a **two-member team**:
 
-Team Member :
-
-**Thulasi G T** --> [@thulasiramegowda](https://github.com/thulasiramegowda) 
-**Bhoomika G J** --> [@bhoomikagj29](https://github.com/bhoomikagj29-ux) 
+- **Thulasi G T** — [@thulasiramegowda](https://github.com/thulasiramegowda)
+- **Bhoomika G J** — [@bhoomikagj29-ux](https://github.com/bhoomikagj29-ux)
 
 ---
 
 ## 💡 What ReviewLens Does
 
-When shopping online, star ratings can be deceiving. A product rated 4.6 stars might look like an easy buy, but its rating might be artificially inflated by coordinated review bursts, copy-pasted bot reviews, or unverified purchase flooding.
+When shopping online, star ratings can be deceiving. A product rated **4.6 stars** on Amazon, Flipkart, or Myntra might look like an immediate buy, but its rating could be artificially inflated by coordinated review velocity bursts, copy-pasted bot reviews, or unverified purchase flooding.
 
-**ReviewLens** solves this problem. A shopper simply pastes an e-commerce product URL (from Amazon, Flipkart, Myntra, Meesho, etc.), and ReviewLens evaluates the product's review profile using a dual-engine architecture:
-1. **Deterministic Risk Algorithms:** Runs reproducible statistical checks to detect velocity bursts (48-hour surges), duplicate wording, unverified purchaser ratios, rating distribution imbalance, reviewer repetition, and extreme rating divergence.
+**ReviewLens** solves this problem. A shopper simply pastes any e-commerce product URL, and ReviewLens evaluates the product's review profile using a **dual-engine architecture**:
+
+1. **Deterministic Risk Algorithms:** Runs 6 transparent, reproducible statistical checks to detect velocity bursts (48-hour surges), duplicate wording, unverified purchaser ratios, rating distribution imbalance, reviewer repetition, and extreme rating divergence.
 2. **Gemini AI Synthesis:** Uses Google Gemini 2.5 Flash to generate a concise plain-language summary, highlight verified positive themes, extract authentic customer complaints, and provide practical buyer advice.
 
 The result is a clear **Review Trust Score (0–100)**, an explainable breakdown of detected risk signals, interactive charts, and transparent buyer guidance.
@@ -41,36 +65,45 @@ ReviewLens gives Riya the clarity she needs in seconds.
 
 ## ✨ Key Features
 
-1. **Universal URL Analysis:** Paste links from Amazon, Flipkart, Myntra, Meesho, or any e-commerce site.
-2. **Real Product Image Scraping:** Dynamically retrieves high-resolution product photography via page metadata (`og:image`, `twitter:image`, JSON-LD) with smart category fallbacks.
-3. **Deterministic Trust Score (0–100):** Transparent mathematical scoring with explainable point deductions mapped directly to visible evidence cards.
-4. **Google Gemini 2.5 Flash AI Report:** Grounded, hallucination-resistant shopper summaries, positive themes, complaints, and buying advice.
-5. **Recent Analyses History:** Automatically saves evaluated products with thumbnails, store tags, and trust badges for instant 1-click re-inspection.
-6. **Interactive Visualizations:** Recharts bar charts (rating distribution), line charts (review timeline), and donut charts (verified buyer ratio).
-7. **Flagged Review Feed:** Browse reviews with distinct badges highlighting comments that triggered risk deductions.
-8. **Dual-Storage Persistence:** MySQL database via Prisma ORM with automatic zero-downtime in-memory fallback.
+- 🔗 **Universal URL Analysis:** Paste links from **Amazon India, Flipkart, Myntra, Meesho**, or any standard e-commerce store.
+- 🖼️ **Real Product Image Scraping:** Dynamically retrieves high-resolution product photography directly from page metadata (`og:image`, `twitter:image`, JSON-LD) with category-based smart fallbacks.
+- 🔢 **Deterministic Trust Score (0–100):** Transparent mathematical scoring with explainable point deductions mapped directly to visible evidence cards.
+- 🤖 **Google Gemini 2.5 Flash AI Report:** Grounded, hallucination-resistant shopper summaries, positive themes, complaints, and buying advice.
+- 📜 **Recent Analyses History:** Automatically saves evaluated products with thumbnails, store tags, and trust badges for instant 1-click re-inspection.
+- 📊 **Interactive Visualizations:** Recharts bar charts (rating distribution), line charts (review timeline), and donut charts (verified buyer ratio).
+- 🚩 **Flagged Review Feed:** Browse reviews with distinct badges highlighting comments that triggered risk deductions.
+- 🛡️ **Dual-Storage Persistence:** MySQL database via Prisma ORM with automatic zero-downtime in-memory fallback.
 
 ---
 
-## 🏗️ Architecture & Tech Stack
+## 🏗️ Architecture & Data Flow
 
-ReviewLens is built as a single full-stack Next.js project designed for deployment directly to Vercel:
+```mermaid
+graph TD
+    Client["Client Browser (Next.js 14 React 18 UI)"]
+    API["API Route: /api/analyze (Next.js App Router)"]
+    DB[("MySQL Database (Prisma ORM) / In-Memory Store")]
+    ImgFetch["Image Fetcher (OpenGraph / JSON-LD Scraper)"]
+    Engine["Deterministic Trust Score Engine (6 Checks)"]
+    Gemini["Google Gemini 2.5 Flash API"]
 
-- **Framework:** Next.js 14+ (App Router, Server-side API routes, React 18)
-- **Language:** TypeScript (Strict typing across client, server, and algorithms)
-- **Styling:** Tailwind CSS (Custom design system: Linear/Stripe/Notion minimalist light-mode aesthetic)
-- **Database & ORM:** Prisma ORM with MySQL & PostgreSQL compatibility + Zero-downtime offline memory fallback
-- **AI Integration:** Google Generative AI (`gemini-2.5-flash`) with structured JSON schema validation and rule-based fallback
-- **Image Intelligence:** Live product image extraction engine from metadata (`og:image`, `twitter:image`, JSON-LD)
-- **Data Visualization:** Recharts (Rating distribution, Review timeline, Verified purchase donut)
-- **Validation:** Zod (Request payload and AI output schema validation)
-- **Icons:** Lucide React
+    Client -->|"POST { productUrl }"| API
+    API -->|"1. Lookup URL"| DB
+    API -->|"2. Scrape live image"| ImgFetch
+    API -->|"3. Synthesize & extract reviews"| Gemini
+    API -->|"4. Calculate 0-100 score"| Engine
+    API -->|"5. Generate grounded report"| Gemini
+    API -->|"6. Cache product & reviews"| DB
+    API -->|"JSON TrustReportPayload"| Client
+```
 
 ---
 
 ## 📊 Transparent Review Trust Score Algorithm
 
 ReviewLens calculates a transparent, explainable trust score from **0 to 100**. Every point deduction is mapped directly to a visible risk signal:
+
+$$\text{Trust Score} = 100 - \sum_{i=1}^{6} D_i$$
 
 | Check | Max Deduction | Trigger Criteria |
 | :--- | :--- | :--- |
@@ -82,23 +115,10 @@ ReviewLens calculates a transparent, explainable trust score from **0 to 100**. 
 | **6. Extreme Deviation** | up to 5 pts | Massive divergence (≥ 1.8★) between unverified reviews and verified buyer reviews |
 
 ### Trust Levels:
-- **80 – 100:** **High Trust** (Green) — Organic distribution, verified buyers, authentic sentiment.
-- **60 – 79:** **Moderate Trust** (Blue) — Minor repetitive wording or clustering; dependable with awareness.
-- **40 – 59:** **Low Trust** (Amber) — Significant unverified reviews or velocity spikes; caution advised.
-- **0 – 39:** **Very Low Trust** (Red) — Critical astroturfing, copy-pasted templates, manufactured ratings.
-
----
-
-## 🤖 Role of Gemini AI
-
-Gemini AI acts as the **intelligent synthesizer**:
-- Reads the capped set of customer reviews alongside backend deterministic risk signals.
-- Generates a 3-sentence shopper-friendly summary explaining the trust rating.
-- Distills authentic positive themes (e.g. "Punchy bass response", "Fast charging turnaround").
-- Extracts recurring customer complaints (e.g. "Heating concerns", "Fragile headband hinge").
-- Gives actionable buyer advice (e.g. "Safe to purchase" vs "Strongly advise against purchasing").
-
-**Fail-safe guarantee:** If `GEMINI_API_KEY` is not provided or quota limits are exceeded, ReviewLens seamlessly generates a high-quality rule-based report from the deterministic signals. The user experience never fails.
+- **80 – 100:** **High Trust** (Green `#16A34A`) — Organic distribution, verified buyers, authentic sentiment.
+- **60 – 79:** **Moderate Trust** (Blue `#2563EB`) — Minor repetitive wording or clustering; dependable with awareness.
+- **40 – 59:** **Low Trust** (Amber `#F59E0B`) — Significant unverified reviews or velocity spikes; caution advised.
+- **0 – 39:** **Very Low Trust** (Red `#DC2626`) — Critical astroturfing, copy-pasted templates, manufactured ratings.
 
 ---
 
@@ -141,7 +161,7 @@ npm run db:seed
 ```bash
 npm run dev
 ```
-Open [http://localhost:3000](http://localhost:3000) in your browser.
+Open **[http://localhost:3000](http://localhost:3000)** in your browser.
 
 ---
 
